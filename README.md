@@ -67,7 +67,7 @@ restaurant-digital-system/
 
 ### 1. Clone Repository
 
-git clone https://github.com/yourusername/restaurant-digital-system.git
+git clone git@github.com:munshif-ak/digital-menu-ordering-pos-system.git
 cd restaurant-digital-system
 
 
