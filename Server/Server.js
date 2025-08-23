@@ -3,7 +3,7 @@ require("dotenv").config();
 const app = express();
 const mongoose = require("mongoose");
 const port = process.env.PORT;
-// const categoryRoutes = require("./routes/categoryRoute");
+const categoryRoutes = require("./routes/categoryRoute");
 
 app.use((req, res, next) => {
   console.log("path " + req.path + "method " + req.method);
@@ -23,5 +23,5 @@ mongoose
     console.log(error);
   });
 
-// app.use("/api/menus/category", categoryRoutes);
+app.use("/api/menus/category", categoryRoutes);
 
