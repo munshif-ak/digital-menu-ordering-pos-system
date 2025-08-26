@@ -1,8 +1,13 @@
 const mongoose = require("mongoose");
 const CategoryModel = require("../models/CategoryModel");
+const fs = require("fs");
+const path = require("path");
 
 const createCategory = async (req, res) => {
-  const { name, img_url } = req.body;
+  const { name } = req.body;
+  const img_url = req.file
+    ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
+    : null;
 
   try {
     const category = await CategoryModel.create({ name, img_url });
@@ -25,7 +30,7 @@ const getSingleCategory = async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ message: "Id Not Found" });
+    return res.status(404).json({ message: "Category not found" });
   }
   try {
     const singleCategory = await CategoryModel.findById(id);
@@ -39,18 +44,43 @@ const updateCategory = async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ message: "Id Not Found" });
+    return res.status(404).json({ message: "Invalid ID" });
   }
+
   try {
-    const editCategory = await CategoryModel.findByIdAndUpdate(
-      {
-        _id: id,
-      },
-      {
-        ...req.body,
+    const category = await CategoryModel.findById(id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // If new image is uploaded, delete old one
+    let img_url = category.img_url;
+    if (req.file) {
+      // delete old file if it exists
+      if (img_url) {
+        const oldPath = path.join(
+          __dirname,
+          "..",
+          img_url.replace(`${req.protocol}://${req.get("host")}/`, "")
+        );
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
       }
-    );
-    res.status(200).json(editCategory);
+
+      // set new image url
+      img_url = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
+    }
+
+    // Update category
+    category.name = req.body.name || category.name;
+    category.img_url = img_url;
+
+    const updatedCategory = await category.save();
+
+    res.status(200).json(updatedCategory);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -60,7 +90,7 @@ const deleteCategory = async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ message: "Id Not Found" });
+    return res.status(404).json({ message: "Category not found" });
   }
   try {
     const deleteCategory = await CategoryModel.findByIdAndDelete(id);
