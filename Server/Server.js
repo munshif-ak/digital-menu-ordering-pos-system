@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 const port = process.env.PORT;
 const swaggerDocs = require("./swagger");
 const categoryRoutes = require("./routes/categoryRoute");
+const productRoutes = require("./routes/productRoute");
+
 const path = require("path");
 
 app.use((req, res, next) => {
@@ -28,5 +30,7 @@ mongoose
   });
 
 app.use("/api/menus/category", categoryRoutes);
+app.use("/api/menus", productRoutes);
+
 
 swaggerDocs(app);
